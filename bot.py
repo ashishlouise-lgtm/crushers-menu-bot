@@ -40,7 +40,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'burgers': "🍔 *BURGERS*\n🔹 Veg: ₹99\n🔹 Cheese: ₹149\n🔹 Paneer: ₹179",
         'coffee': "☕ *BEVERAGES*\n❄️ Cold Coffee: ₹120\n🥤 Oreo Shake: ₹160\n🔥 Hot Coffee: ₹90",
         'pizza': "🍕 *PIZZAS*\n🔸 Margherita: ₹199\n🔸 Veggie: ₹299\n🔸 Paneer: ₹349",
-        'contact': "📍 *Uttarakhand, City Center*\n📞 +91 XXXXX XXXXX"
+        'contact': "📍 *Indore, City Center*\n📞 +91 XXXXX XXXXX"
     }
 
     if query.data in DATA:
