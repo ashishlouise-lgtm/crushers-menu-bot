@@ -49,6 +49,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Aap kya order karna chahenge?", reply_markup=markup)
 
 # 4. AI Chat Handler
+model = genai.GenerativeModel('gemini-1.5-flash')
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     try:
