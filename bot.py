@@ -1,4 +1,4 @@
-import os
+overimport os
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
@@ -59,4 +59,10 @@ def main():
     app.run_polling()
 
 if __name__ == '__main__':
+    main()
+    import os
+# ... baki code ...
+if __name__ == '__main__':
+    # Ye line Render ko khush rakhegi
+    os.system("python3 -m http.server $PORT &") 
     main()
