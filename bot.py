@@ -62,6 +62,21 @@ def main():
     app.run_polling()
 
 if __name__ == '__main__':
-    # Render port error se bachne ke liye
-    os.system(f"python3 -m http.server {os.environ.get('PORT', 8080)} &")
+    from threading import Thread
+    import http.server
+    import socketserver
+    import os
+
+    def run_server():
+        port = int(os.environ.get("PORT", 8080))
+        class MyHandler(http.server.SimpleHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"Bot is Active!")
+        
+        with socketserver.TCPServer(("", port), MyHandler) as httpd:
+            httpd.serve_forever()
+
+    Thread(target=run_server, daemon=True).start()
     main()
