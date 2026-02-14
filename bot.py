@@ -31,7 +31,8 @@ if not GEMINI_KEY:
 
 # -------------------- GEMINI SETUP --------------------
 genai.configure(api_key=GEMINI_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-pro")
+
 
 # -------------------- MENU --------------------
 def get_menu_markup():
