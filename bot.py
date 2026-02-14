@@ -1,10 +1,11 @@
 
-   import os
+   
+import os
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-# Logging set karein taaki Render ke logs mein error dikhe
+# Logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -58,11 +59,9 @@ def main():
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
-    # Render ke liye port binding ki line yahan add ki hai
-    port = int(os.environ.get("PORT", 8080))
     app.run_polling()
 
 if __name__ == '__main__':
-    # Ye line Render ke 'Web Service' timeout error ko rokti hai
+    # Render port error se bachne ke liye
     os.system(f"python3 -m http.server {os.environ.get('PORT', 8080)} &")
-    main() 
+    main()
