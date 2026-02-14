@@ -1,4 +1,3 @@
-
 import os
 import logging
 import google.generativeai as genai
@@ -8,8 +7,13 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 # Logging setup
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+# Environment Variables se keys lena
 TOKEN = os.getenv("BOT_TOKEN")
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Gemini setup
+genai.configure(api_key=API_KEY)
+# Yahan model ka naam ekdam sahi format mein rakha hai
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # 1. Cafe Menu Buttons Definition
@@ -49,35 +53,48 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("Aap kya order karna chahenge?", reply_markup=markup)
 
 # 4. AI Chat Handler
-model = genai.GenerativeModel('gemini-1.5-flash')
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     try:
-        # AI ko batana ki wo cafe assistant hai
-        prompt = f"You are a helpful assistant for Crushers Cafe. If the user asks for menu, tell them to use buttons. User: {user_text}"
+        # Prompt ko clean rakha hai taaki model confused na ho
+        prompt = f"You are a helpful assistant for Crushers Cafe. Answer the user politely: {user_text}"
         response = model.generate_content(prompt)
         await update.message.reply_text(response.text)
     except Exception as e:
         logging.error(f"AI Error: {e}")
+        # Agar AI key ya model mein dikkat hai toh hi ye message aayega
         await update.message.reply_text("Maaf kijiye, main abhi busy hoon. Please menu buttons use karein.")
 
 def main():
-    if not TOKEN: return
+    if not TOKEN:
+        logging.error("BOT_TOKEN is missing!")
+        return
+    
     app = Application.builder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
+    logging.info("Bot is polling...")
     app.run_polling()
 
 if __name__ == '__main__':
     from threading import Thread
     import http.server
     import socketserver
+    
+    # Dummy server for Render health checks and Cron-job
     def run_server():
         port = int(os.environ.get("PORT", 8080))
-        with socketserver.TCPServer(("", port), http.server.SimpleHTTPRequestHandler) as httpd:
+        class MyHandler(http.server.SimpleHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"AI Bot is Active!")
+        
+        with socketserver.TCPServer(("", port), MyHandler) as httpd:
             httpd.serve_forever()
+            
     Thread(target=run_server, daemon=True).start()
     main()
