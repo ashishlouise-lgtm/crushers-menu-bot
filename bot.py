@@ -21,7 +21,7 @@ logging.basicConfig(
 
 # -------------------- ENV VARIABLES --------------------
 TOKEN = os.getenv("BOT_TOKEN")
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_KEY = os.getenv("AIzaSyD483-YLCG5lF1Bntkiow147HyDHcUjTAY")
 
 if not TOKEN:
     raise ValueError("BOT_TOKEN missing!")
