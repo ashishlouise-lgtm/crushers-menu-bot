@@ -55,6 +55,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_menu_markup(),
         parse_mode="Markdown",
     )
+    
 
 # -------------------- BUTTON HANDLER --------------------
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
