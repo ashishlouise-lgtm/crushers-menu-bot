@@ -1,8 +1,8 @@
     import telebot
 from telebot import types
 
-TOKEN = "YOUR_BOT_TOKEN"
-ADMIN_ID = 123456789  # apna telegram user id yaha daalo
+TOKEN = "8153875279:AAGjqdhbiJrvZt58zQjWGc5EpweT6Bb1g6k"
+ADMIN_ID =6494419797 apna telegram user id yaha daalo
 
 bot = telebot.TeleBot(TOKEN)
 
