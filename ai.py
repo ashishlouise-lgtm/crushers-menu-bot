@@ -14,7 +14,7 @@ def run_health_server():
         httpd.serve_forever()
 
 # --- CONFIGURATION ---
-TOKEN = os.getenv("8153875279:AAGjqdhbiJrvZt58zQjWGc5EpweT6Bb1g6k")
+BOT_TOKEN = os.getenv("8153875279:AAGjqdhbiJrvZt58zQjWGc5EpweT6Bb1g6k")
 GEMINI_KEY = os.getenv("AIzaSyD483-YLCG5lF1Bntkiow147HDHcUjTAY")
 # Apna Google Form Link yahan paste karein
 FORM_LINK = "https://forms.gle/your_link_here" 
