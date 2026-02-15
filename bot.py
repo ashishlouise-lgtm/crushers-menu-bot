@@ -1,110 +1,83 @@
     
-import telebot
-from telebot import types
 
-BOT_TOKEN ="8153875279:AAGjqdhbiJrvZt58zQjWGc5EpweT6Bb1g6k"
-ADMIN_ID =6494419797
+   
+import os
+import logging
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
-bot = telebot.TeleBot(BOT_TOKEN)
+# Logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-menu = {
-    "☕ Coffee": {
-        "Espresso - ₹80": 80,
-        "Cappuccino - ₹120": 120,
-        "Latte - ₹150": 150
-    },
-    "🥤 Cold Drinks": {
-        "Coca Cola - ₹50": 50,
-        "Pepsi - ₹50": 50,
-        "Cold Coffee - ₹140": 140
-    },
-    "🍔 Fast Food": {
-        "Veg Burger - ₹90": 90,
-        "Cheese Pizza - ₹200": 200,
-        "Sandwich - ₹70": 70
-    },
-    "🍰 Desserts": {
-        "Chocolate Cake - ₹160": 160,
-        "Ice Cream - ₹100": 100,
-        "Brownie - ₹120": 120
-    }
-}
+TOKEN = os.getenv("BOT_TOKEN")
 
-user_orders = {}
+async def get_menu_markup():
+    keyboard = [
+        [InlineKeyboardButton("🍔 Burgers & Snacks", callback_data='burgers'),
+         InlineKeyboardButton("☕ Beverages", callback_data='coffee')],
+        [InlineKeyboardButton("🍕 Pizza Specials", callback_data='pizza')],
+        [InlineKeyboardButton("📍 Location & Contact", callback_data='contact')]
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
-@bot.message_handler(commands=['start'])
-def start(message):
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for category in menu.keys():
-        markup.add(category)
-    bot.send_message(message.chat.id, "☕ Welcome to Aashish Cafe!\nChoose Category:", reply_markup=markup)
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    markup = await get_menu_markup()
+    text = "👋 *Welcome to Crushers Cafe!*\n\nNeeche diye gaye buttons se menu check karein:"
+    await update.message.reply_text(text, reply_markup=markup, parse_mode='Markdown')
 
-@bot.message_handler(func=lambda message: message.text in menu.keys())
-def show_items(message):
-    category = message.text
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for item in menu[category].keys():
-        markup.add(item)
-    markup.add("🔙 Back")
-    bot.send_message(message.chat.id, f"📋 {category} Menu:", reply_markup=markup)
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_msg = update.message.text.lower()
+    if any(word in user_msg for word in ["hi", "hello", "hey", "menu"]):
+        markup = await get_menu_markup()
+        await update.message.reply_text("Welcome back! Menu hazir hai:", reply_markup=markup)
+    else:
+        await update.message.reply_text("Please click /start or say 'Hi' to see the menu.")
 
-@bot.message_handler(func=lambda message: any(message.text in items for items in menu.values()))
-def add_to_cart(message):
-    chat_id = message.chat.id
-    item = message.text
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
 
-    if chat_id not in user_orders:
-        user_orders[chat_id] = []
+    DATA = {
+        'burgers': "🍔 *BURGERS*\n🔹 Veg: ₹99\n🔹 Cheese: ₹149\n🔹 Paneer: ₹179",
+        'coffee': "☕ *BEVERAGES*\n❄️ Cold Coffee: ₹120\n🥤 Oreo Shake: ₹160\n🔥 Hot Coffee: ₹90",
+        'pizza': "🍕 *PIZZAS*\n🔸 Margherita: ₹199\n🔸 Veggie: ₹299\n🔸 Paneer: ₹349",
+        'contact': "📍 *Indore, City Center*\n📞 +91 XXXXX XXXXX"
+    }
 
-    user_orders[chat_id].append(item)
+    if query.data in DATA:
+        back_btn = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Back", callback_data='main_menu')]])
+        await query.edit_message_text(text=DATA[query.data], reply_markup=back_btn, parse_mode='Markdown')
+    elif query.data == 'main_menu':
+        markup = await get_menu_markup()
+        await query.edit_message_text("Aap kya order karna chahenge?", reply_markup=markup)
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("🛒 View Order", "🔙 Back")
+def main():
+    if not TOKEN:
+        print("Error: BOT_TOKEN not found!")
+        return
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+    
+    app.run_polling()
 
-    bot.send_message(chat_id, f"✅ {item} Added to cart!", reply_markup=markup)
+if __name__ == '__main__':
+    from threading import Thread
+    import http.server
+    import socketserver
+    import os
 
-@bot.message_handler(func=lambda message: message.text == "🛒 View Order")
-def view_order(message):
-    chat_id = message.chat.id
+    def run_server():
+        port = int(os.environ.get("PORT", 8080))
+        class MyHandler(http.server.SimpleHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b"Bot is Active!")
+        
+        with socketserver.TCPServer(("", port), MyHandler) as httpd:
+            httpd.serve_forever()
 
-    if chat_id not in user_orders or not user_orders[chat_id]:
-        bot.send_message(chat_id, "❌ Cart is empty!")
-        return
-
-    total = 0
-    order_text = "🧾 Your Order:\n\n"
-
-    for item in user_orders[chat_id]:
-        order_text += f"• {item}\n"
-        for category in menu.values():
-            if item in category:
-                total += category[item]
-
-    order_text += f"\n💰 Total: ₹{total}"
-
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    markup.add("✅ Confirm Order", "🔙 Back")
-
-    bot.send_message(chat_id, order_text, reply_markup=markup)
-
-@bot.message_handler(func=lambda message: message.text == "✅ Confirm Order")
-def confirm_order(message):
-    chat_id = message.chat.id
-
-    if chat_id not in user_orders:
-        return
-
-    order_list = "\n".join(user_orders[chat_id])
-
-    bot.send_message(chat_id, "🎉 Order Confirmed! Thank you for ordering.")
-    bot.send_message(ADMIN_ID, f"📢 New Order:\n\n{order_list}")
-
-    user_orders[chat_id] = []
-
-@bot.message_handler(func=lambda message: message.text == "🔙 Back")
-def back(message):
-    start(message)
-
-print("Bot Running...")
-bot.infinity_polling()
-
+    Thread(target=run_server, daemon=True).start()
+    main()
