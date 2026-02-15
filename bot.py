@@ -1,4 +1,4 @@
-import os
+ import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 # 1. Menu Data
@@ -63,4 +63,4 @@ def main():
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == '__main__':
-    main()
+   
