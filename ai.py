@@ -85,8 +85,7 @@ async def ai_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Maaf kijiye, main abhi busy hoon. Please menu buttons use karein.")
 
 def main():
-    app = Application.builder().token(TOKEN).build()
-    
+    app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, ai_chat))
